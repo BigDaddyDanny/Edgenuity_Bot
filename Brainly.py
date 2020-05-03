@@ -8,7 +8,6 @@ if __name__ == '__main__':
     pass
 
 import urllib.request
-from bs4 import BeautifulSoup
 
 minimum_rating = 3.5
 
@@ -202,18 +201,14 @@ def get_brainly_answer(page_content, possible_answers):
 url = 'https://brainly.com/question/11533079'
 answer_choices = ()
 
-
 user_agent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'
 
 headers = {'User-Agent': user_agent}
-
 
 req = urllib.request.Request(url,headers=headers)
 with urllib.request.urlopen(req) as response:
     page = response.read()
     
-#soup = BeautifulSoup(str(page), 'html.parser')
-
 '''
 
 
