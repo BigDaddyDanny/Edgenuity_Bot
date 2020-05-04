@@ -7,8 +7,6 @@ Created on Apr 29, 2020
 if __name__ == '__main__':
     pass
 
-import urllib.request
-
 minimum_rating = 3.5
 
 #returns set of question and answers
@@ -197,28 +195,3 @@ def get_brainly_answer(page_content, possible_answers):
 '''
 - modify to address multiple choice questions
 '''
-        
-url = 'https://brainly.com/question/11533079'
-answer_choices = ()
-
-user_agent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)'
-
-headers = {'User-Agent': user_agent}
-
-req = urllib.request.Request(url,headers=headers)
-with urllib.request.urlopen(req) as response:
-    page = response.read()
-    
-'''
-
-
-urls = set()
-
-for a_tag in soup.findAll("a"):
-    href = a_tag.attrs.get("href")
-    if href == "" or href is None:
-        
-        continue
-    urls.add(href)
-'''
-print(get_brainly_answer(str(page), ['yolo king', 'Business owners are driven by personal success, not profits.', 'The healthcare field will create new jobs because more people will need care']))
