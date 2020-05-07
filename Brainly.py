@@ -10,17 +10,17 @@ if __name__ == '__main__':
 minimum_rating = 3.5
 
 #returns set of question and answers
-def get_brainly_results(page_content):
+def get_brainly_results(page_content):#needs to be fixed, taking off letter from answer
     
     temp = page_content
     
     answers = list()
     
-    start_index = temp.find('data-test="answer-content"') + 26
+    start_index = temp.find('data-test="answer-content"') + 29
     
     while start_index != 25:
         
-        end_index = temp[start_index:].find('</div>')
+        end_index = temp[start_index:].find('</div>') - 2
          
         answers.append(temp[start_index: start_index + end_index])
         
@@ -30,7 +30,36 @@ def get_brainly_results(page_content):
         
     temp = page_content
     
+    print(answers)
+    
+    for i in range(len(answers)):
+        answer = answers[i]
+    
+        index = answer.find('\\')
+        while index != -1:
+            if answer[index + 1] == 'n':
+                answer = answer[: index] + answer[index + 2:]
+            else:
+                answer = answer[: index] + answer[index + 4:]
+            index = answer.find('\\')
+            print(answer)
+            
+        index = answer.find('<')
+        end_index = answer[index:].find('>') + index
+        while index != -1 and end_index != -1:
+            answer = answer[: index] + ' ' + answer[end_index + 1:]
+            index = answer.find('<')
+            end_index = answer[index:].find('>') + index
+            
+        answer = answer.replace(',', ' ').replace('.', ' ').replace(':', ' ').replace(')', ' ').replace('(', ' ')
+            
+        answers[i] = answer
+    
+    print(answers)
+    
     ratings = list()
+    
+    temp = page_content
     
     index = temp.find('data-rating-value=') + 19
     
@@ -55,142 +84,84 @@ def get_brainly_results(page_content):
 def extract_letter_answer(string):
     
     string = string.lower()
-        
-    a = 0
-    b = 0
-    c = 0
-    d = 0
-    e = 0
+           
+    occur = [0, 0, 0, 0, 0, 0]
+
+    occur[0] += check_for_choice(string, 'a') + check_for_choice(string, '1')
+    occur[1] += check_for_choice(string, 'b') + check_for_choice(string, '2')
+    occur[2] += check_for_choice(string, 'c') + check_for_choice(string, '3')
+    occur[3] += check_for_choice(string, 'd') + check_for_choice(string, '4')
+    occur[4] += check_for_choice(string, 'e') + check_for_choice(string, '5')
     
-            
-    a += check_for_choice(string, 'a') + check_for_choice(string, '1')
-
-    b += check_for_choice(string, 'b') + check_for_choice(string, '2')
-
-    c += check_for_choice(string, 'c') + check_for_choice(string, '3')
-
-    d += check_for_choice(string, 'd') + check_for_choice(string, '4')
-
-    e += check_for_choice(string, 'e') or check_for_choice(string, '5')
-
-    if a > b and a > c and a > d and a > e:
-        return 'a'
-    elif b > c and b > d and b > e:
-        return 'b' 
-    elif c > d and c > e:
-        return 'c'
-    elif d > e:
-        return 'd'
-    elif e > 0: 
-        return 'e'
-    
-    
-    return None
+    return occur
 
 def check_for_choice(string, choice):
-    
-    total = 0    
-    
+        
     if string.find(' ' + choice + ' ') != -1 and choice != 'a':
-        total += 1
-    if string.find(' ' + choice + '.') != -1:
-        total += 1
-    if string.find(' ' + choice + ')') != -1:
-        total += 1
-    if string.find(choice + ' ') == 0:
-        total += 1
-    if string.find(choice + '.') == 0:
-        total += 1
-    if string.find(choice + ')') == 0:
-        total += 1
-    if string.find('>' + choice + ' ') != -1:
-        total += 1
-    if string.find('>' + choice + '.') != -1:
-        total += 1
-    if string.find('>' + choice + ')') != -1:
-        total += 1
-    if string.find('>' + choice + '<') != -1:
-        total += 1    
+        return 1
     
-    return total
+    if(choice == 'a'):
+        if string.find('  ' + 'a' + ' ') != -1:
+            return 1
+        if string.find(' ' + 'a' + '  ') != -1:
+            return 1
+
+    
+    return 0
 
 def extract_sentence_answer(answer_content, possible_answers):
     
     answer_content = answer_content.lower()
     
-    counter = 1
+    occurences = [0, 0, 0, 0, 0, 0]
         
-    for poss_answer in possible_answers:
+    for i in range(len(possible_answers)):
         
-        poss_answer = poss_answer.lower()
-                
-        if answer_content.find(poss_answer) != -1:
-            
-            if counter == 1:
-                return 'a'
-            if counter == 2:
-                return 'b'
-            if counter == 3:
-                return 'c'
-            if counter == 4:
-                return 'd'
-            if counter == 5:
-                return 'e'
-            
-        counter += 1
+        poss_answer = possible_answers[i].lower()
+        
+        occurences[i] = occurences[i] + answer_content.count(poss_answer)
     
-    return None
+    m = max(occurences)
+    for num in occurences:
+        if num != m and num != 0:
+            return [0, 0, 0, 0, 0, 0]
+    
+    return occurences
 
 def get_brainly_answer(page_content, possible_answers):
     
-    a = 0
-    b = 0
-    c = 0
-    d = 0
-    e = 0
+    occurences = [0, 0, 0, 0, 0, 0]
     
     for x in get_brainly_results(page_content):
-        choice = extract_letter_answer(x)
-        if choice != None:
-                        
-            if choice == 'a':
-                a += 1
-            if choice == 'b':
-                b += 1
-            if choice == 'c':
-                c += 1
-            if choice == 'd':
-                d += 1
-            if choice == 'e':
-                e += 1
+        print(x)
+        
+        results = extract_letter_answer(x)
+        print('letters: ', results)
+        occurences = [a + b for a, b in zip(occurences, results)] 
     
-        choice = extract_sentence_answer(x, possible_answers)
-        if choice != None:
-                        
-            if choice == 'a':
-                a += 1
-            if choice == 'b':
-                b += 1
-            if choice == 'c':
-                c += 1
-            if choice == 'd':
-                d += 1
-            if choice == 'e':
-                e += 1
-                
-    if a > b and a > c and a > d and a > e:
-        return 'a'
-    elif b > c and b > d and b > e and a != b:
-        return 'b' 
-    elif c > d and c > e and c != a and c != b:
-        return 'c'
-    elif d > e and d != a and d != b and d != c:
-        return 'd'
-    elif e > 0 and e != a and e != b and e != c and e != d:
-        return 'e'   
-    
-    return 'answer not found'
-    
+        results = extract_sentence_answer(x, possible_answers)
+        print('sentences: ', results)
+
+        occurences = [a + b for a, b in zip(occurences, results)]
+  
+    m = max(occurences)
+    indexes = [i for i, j in enumerate(occurences) if j == m]
+    for i in range(len(indexes)):
+        
+        if indexes[i] == 0:
+            indexes[i] = 'a'
+        if indexes[i] == 1:
+            indexes[i] = 'b'
+        if indexes[i] == 2:
+            indexes[i] = 'c'
+        if indexes[i] == 3:
+            indexes[i] = 'd'
+        if indexes[i] == 4:
+            indexes[i] = 'e'
+        if indexes[i] == 5:
+            indexes[i] = 'f'
+   
+    return indexes
     
 '''
 - modify to address multiple choice questions
